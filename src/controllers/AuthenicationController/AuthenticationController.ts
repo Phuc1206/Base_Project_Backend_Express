@@ -101,26 +101,62 @@ export const refreshToken: any = async (req: IRequest, res: IResponse) => {
         if (!currentRefreshToken) {
             return res.status(401).json({ error: 'Không tìm thấy refresh token' });
         }
-        let userPayload: any;
+        let minimalPayload: { userId: string; iat: number; exp: number };
         try {
-            userPayload = await webToken.verify(currentRefreshToken, ENV.REFRESH_TOKEN_SECRET);
-            console.log(userPayload);
+            minimalPayload = await webToken.verify(currentRefreshToken, ENV.REFRESH_TOKEN_SECRET);
+            console.log(minimalPayload);
         } catch (err) {
             logger('WARNING', 'Refresh token không hợp lệ hoặc đã hết hạn', err);
             return res.status(403).json({ message: 'Refresh token không hợp lệ, vui lòng đăng nhập lại' });
         }
-        const newAccessTokenPayload: IToken = {
-            userId: userPayload.userId?.toString(),
-            level: userPayload.level,
-            role: userPayload.role,
-            type: userPayload.type,
-            ownerId: userPayload.ownerId,
-            username: userPayload.username,
-        };
+        let newAccessTokenPayload: IToken;
+        if (minimalPayload?.userId === ENV.ADMIN_ID) {
+            newAccessTokenPayload = {
+                userId: ENV.ADMIN_ID,
+                level: 'ADMIN',
+                role: '',
+                type: '',
+                username: ENV.ADMIN_USER_NAME,
+                ownerId: '',
+            };
+        } else {
+            const user = await User.findById(minimalPayload.userId).lean();
+            if (!user) {
+                logger('WARNING', `Refresh token: User not found for ID: ${minimalPayload.userId}`);
+                return res.status(403).json({ message: 'Không tìm thấy người dùng' });
+            }
+            newAccessTokenPayload = {
+                userId: user._id.toString(),
+                level: user.permission.level,
+                role: user.permission.role,
+                type: user.permission.type,
+                ownerId: (user as any).ownerId, // Giả sử user có ownerId
+                username: user.username,
+            };
+        }
+
         const newAccessToken = generate.token(newAccessTokenPayload).accessToken;
         res.status(200).json({
             accessToken: newAccessToken,
         });
+    } catch (error) {
+        logger('ERROR', error);
+        res.status(500).send(String(error).split('\n').at(0));
+        return res.end();
+    }
+};
+
+export const signOutSlug: string = '/sign-out';
+export const signOut: any = async (req: IRequest, res: IResponse) => {
+    try {
+        res.cookie('refreshToken', '', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            expires: new Date(0),
+        });
+
+        res.status(200).json({ message: 'Đăng xuất thành công' });
     } catch (error) {
         logger('ERROR', error);
         res.status(500).send(String(error).split('\n').at(0));

@@ -27,6 +27,8 @@ export interface IUserSchema {
     background: IDefaultUploadSchema | undefined;
     permission: IPermissionSchema;
     address: IAddressSchema;
+    contracts: IDefaultUploadSchema[] | [];
+    status: boolean;
 }
 
 // Include virtual properties and methods
@@ -49,7 +51,7 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
     {
         avatar: {
             type: DefaultUploadSchema,
-            default: '',
+            default: null,
         },
         username: {
             type: String,
@@ -100,6 +102,22 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
         address: {
             type: AddressSchema,
         },
+        contracts: {
+            type: [DefaultUploadSchema],
+            default: [],
+        },
+        logo: {
+            type: DefaultUploadSchema,
+            default: null,
+        },
+        background: {
+            type: DefaultUploadSchema,
+            default: null,
+        },
+        status: {
+            type: Boolean,
+            default: true,
+        },
         ...generate.schemaDefaultDefinition(),
     },
     {
@@ -108,4 +126,3 @@ const UserSchema = new mongoose.Schema<IUserDocument, IUserModel>(
 );
 
 export default make.schema(UserSchema);
-
