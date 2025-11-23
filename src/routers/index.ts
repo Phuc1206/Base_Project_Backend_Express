@@ -7,6 +7,7 @@ import accessControlAllow from '../middleware/accessControlAllow';
 import authRouter from '@/routers/authRouter';
 import resourcesRouter from '@/routers/Resources';
 import cookieParser from 'cookie-parser';
+import { swaggerSpec, swaggerUi } from '@/swaggerConfig';
 
 function router(app: Application) {
     if (ENV.IS_DEV) {
@@ -17,6 +18,7 @@ function router(app: Application) {
     app.use(bodyParser.json());
 
     app.use(accessControlAllow);
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
     app.use('/auth', authRouter);
     app.use('/resources', authenticateToken, resourcesRouter);
     app.get('/', (req: Request, res: Response) => {
@@ -25,4 +27,3 @@ function router(app: Application) {
 }
 
 export default router;
-

@@ -28,6 +28,8 @@
         "@types/morgan": "^1.9.9",
         "@types/multer": "^1.4.12",
         "@types/node": "^22.13.10",
+        "@types/swagger-jsdoc": "^6.0.4",
+        "@types/swagger-ui-express": "^4.1.8",
         "eslint": "^9.22.0",
         "eslint-config-prettier": "^10.1.1",
         "eslint-plugin-prettier": "^5.2.3",
@@ -50,6 +52,8 @@
         "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.12.1",
         "morgan": "^1.10.0",
-        "multer": "^1.4.5-lts.1"
+        "multer": "^1.4.5-lts.1",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
     }
 }
